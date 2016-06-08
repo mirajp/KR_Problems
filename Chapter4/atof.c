@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
+#include <string.h>
 
+// Note: Have to compile with '-lm' flag to link math library definitions for gcc
 // atof: convert string s to double, based on function provided in K&R, extended
 // to handle scientific notation, ex. "123.45E2" | "123.45e+2" = 12345
 double atof(char s[]) {
-    double val, power, esign;
-    int i, sign;
+    double val, power;
+    int i, sign, esign;
 
     for (i = 0; isspace(s[i]); i++) {
         ; // skip over white space
@@ -38,21 +40,27 @@ double atof(char s[]) {
         // power that will be used to divide the value
         // else if negative, increase power 10-fold for each digit as was done
         // during the decimal value capture
-        esign = (s[i] == '-') ? 10 : 0.10;
+        esign = (s[i] == '-') ? 1 : -1;
 
         if (s[i] == '+' || s[i] == '-')
             i++;
 
-        for ( ; isdigit(s[i]); i++) {
-            val = 10*val + (s[i] - '0');
-            power *= esign;
+        int j;
+        char exponent[16];
+        for (j=0; isdigit(s[i]); i++, j++) {
+            exponent[j] = s[i];
         }
+        j = atoi(exponent);
+        power *= pow(10, esign*j);
     }
 
     return (sign*val/power);
 }
 
 int main() {
-    char testval[] = "123.45e2";
-    printf("Value of %s = %f\n", testval, atof(testval));
+    printf("Value of %s = %f\n", "123.45e+2", atof("123.45e+2"));
+
+    printf("Value of %s = %f\n", "123.45e2", atof("123.45e2"));
+
+    printf("Value of %s = %f\n", "123.45e-2", atof("123.45e-2"));
 }
